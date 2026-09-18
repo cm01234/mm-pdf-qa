@@ -40,6 +40,7 @@ with st.sidebar:
         if st.button("Process PDF", type="primary"):
             with st.spinner("Processing PDF..."):
                 try:
+                    st.session_state.document_id = None
                     st.session_state.document_id = ingest_pdf(
                         pdf_path,
                         reset_database=reset,

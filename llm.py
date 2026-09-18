@@ -10,12 +10,54 @@ load_dotenv()
 MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b")
 
 
+class OllamaConfigurationError(RuntimeError):
+    """Raised when Ollama is unavailable or the configured model is missing."""
+
+
+def chat_with_ollama(**kwargs):
+    try:
+        return ollama.chat(**kwargs)
+    except ollama.ResponseError as error:
+        if error.status_code == 404 or "not found" in str(error).lower():
+            raise OllamaConfigurationError(
+                f"Ollama model '{MODEL}' is not installed. "
+                f"Run `ollama pull {MODEL}` and try again."
+            ) from error
+
+        raise OllamaConfigurationError(
+            f"Ollama returned an error: {error}"
+        ) from error
+    except Exception as error:
+        message = str(error).lower()
+        connection_errors = (
+            "connection refused",
+            "failed to connect",
+            "connection error",
+            "cannot connect",
+            "all connection attempts failed",
+            "connection reset",
+            "network is unreachable",
+            "timed out",
+            "timeout",
+        )
+
+        if any(item in message for item in connection_errors):
+            raise OllamaConfigurationError(
+                "Ollama is not running. Start it with `ollama serve` and try again."
+            ) from error
+
+        raise
+
+
 def ask_llm(prompt):
     """
     Ask the local Qwen model a text-only question.
     """
 
-    response = ollama.chat(model=MODEL, messages=[{"role": "user", "content": prompt}])
+    response = chat_with_ollama(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
 
     return response["message"]["content"]
 
@@ -65,7 +107,7 @@ Do not invent information.
 Return a concise factual description.
 """
 
-    response = ollama.chat(
+    response = chat_with_ollama(
         model=MODEL,
         messages=[
             {

@@ -3,7 +3,7 @@ import os
 import shutil
 
 from pdf_processor import PDFProcessor
-from llm import analyze_image
+from llm import OllamaConfigurationError, analyze_image
 from database import clear_chroma_cache, get_collection
 from models import get_embedding_model
 
@@ -132,6 +132,9 @@ def ingest_pdf(
                     f"image/chart\n\n"
                     f"{description}"
                 )
+
+            except OllamaConfigurationError:
+                raise
 
             except Exception as e:
 

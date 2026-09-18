@@ -15,6 +15,12 @@ def test_chunk_text_uses_overlap():
     assert chunks == ["abcdef", "efghij"]
 
 
+def test_chunk_text_splits_long_text():
+    chunks = chunk_text("a" * 13, chunk_size=5, overlap=1)
+
+    assert chunks == ["aaaaa", "aaaaa", "aaaaa"]
+
+
 def test_document_id_is_stable_and_content_based(tmp_path):
     pdf_path = tmp_path / "document.pdf"
     pdf_path.write_bytes(b"document contents")
