@@ -49,8 +49,13 @@ def chunk_text(
 
 def ingest_pdf(
     pdf_path,
-    reset_database=False
+    reset_database=False,
+    progress_callback=None,
 ):
+
+    def report_progress(progress, message):
+        if progress_callback:
+            progress_callback(progress, message)
 
     print(
         f"\nProcessing {pdf_path}"
@@ -85,6 +90,7 @@ def ingest_pdf(
     )
 
     documents = processor.extract()
+    report_progress(0.2, f"Extracted {len(documents)} PDF objects")
 
     print(
         f"Extracted {len(documents)} objects"
@@ -98,7 +104,9 @@ def ingest_pdf(
     # PROCESS
     # =========================================
 
-    for document in documents:
+    total_documents = len(documents) or 1
+
+    for document_number, document in enumerate(documents, start=1):
 
         doc_type = document[
             "type"
@@ -192,6 +200,11 @@ def ingest_pdf(
                 )
             })
 
+        report_progress(
+            0.2 + (0.6 * document_number / total_documents),
+            f"Processed PDF object {document_number} of {len(documents)}",
+        )
+
     # =========================================
     # EMBEDDINGS
     # =========================================
@@ -208,6 +221,7 @@ def ingest_pdf(
     )
 
     embeddings = embeddings.tolist()
+    report_progress(0.9, f"Created {len(texts)} embeddings")
 
     # =========================================
     # STORE IN CHROMA
@@ -219,6 +233,7 @@ def ingest_pdf(
         embeddings=embeddings,
         metadatas=metadatas
     )
+    report_progress(1.0, "PDF indexing complete")
 
     print(
         "\n================================"

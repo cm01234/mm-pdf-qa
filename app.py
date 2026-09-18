@@ -41,12 +41,21 @@ with st.sidebar:
             with st.spinner("Processing PDF..."):
                 try:
                     st.session_state.document_id = None
+
+                    progress = st.progress(0, text="Starting PDF processing...")
+
+                    def update_progress(value, message):
+                        progress.progress(value, text=message)
+
                     st.session_state.document_id = ingest_pdf(
                         pdf_path,
                         reset_database=reset,
+                        progress_callback=update_progress,
                     )
+                    progress.empty()
                     st.success("PDF indexed successfully.")
                 except Exception as e:
+                    progress.empty()
                     st.error(str(e))
 
     st.divider()

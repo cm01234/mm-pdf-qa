@@ -20,6 +20,7 @@
 
 ## Ingestion and User Experience
 
+- [x] Add a progress bar showing PDF processing progress to the user.
 - [ ] Avoid saving the uploaded PDF on every Streamlit rerun.
 - [ ] Save uploaded files only when the user clicks **Process PDF**.
 - [ ] Sanitize uploaded filenames before writing them to `documents/`.

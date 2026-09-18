@@ -62,3 +62,27 @@ def test_ingestion_adds_document_metadata_and_unique_ids(monkeypatch, tmp_path):
     assert first_chunk["metadatas"][0]["source"] == "first.pdf"
     assert first_chunk["metadatas"][0]["page"] == 1
     assert first_chunk["ids"] != second_chunk["ids"]
+
+
+def test_ingestion_reports_progress(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "progress.pdf"
+    pdf_path.write_bytes(b"progress document")
+
+    collection = FakeCollection()
+    progress_updates = []
+    monkeypatch.setattr(ingest, "PDFProcessor", FakeProcessor)
+    monkeypatch.setattr(ingest, "get_collection", lambda: collection)
+    monkeypatch.setattr(ingest, "get_embedding_model", lambda: FakeEmbeddingModel())
+
+    ingest.ingest_pdf(
+        pdf_path,
+        progress_callback=lambda value, message: progress_updates.append(
+            (value, message)
+        ),
+    )
+
+    values = [value for value, _ in progress_updates]
+    assert values == sorted(values)
+    assert values[0] == 0.2
+    assert values[-1] == 1.0
+    assert progress_updates[-1][1] == "PDF indexing complete"
