@@ -39,6 +39,9 @@ def chunk_text(
             text[start:end]
         )
 
+        if end >= len(text):
+            break
+
         start = end - overlap
 
     return chunks

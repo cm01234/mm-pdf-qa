@@ -135,6 +135,27 @@ Compile the Python modules before pushing changes:
 python -m py_compile app.py ingest.py models.py pdf_processor.py rag.py llm.py
 ```
 
+Run the test suite locally:
+
+```bash
+python -m pytest
+```
+
+## Git Workflow
+
+Use `dev` for new work and push it to GitHub for CI validation:
+
+```bash
+git switch dev
+git add .
+git commit -m "Describe your change"
+git push -u origin dev
+```
+
+Open a pull request from `dev` into `main`. The GitHub Actions workflow runs the test suite and Python compile check for pushes to `dev` and for pull requests targeting `main`.
+
+To enforce this before merging, configure GitHub branch protection for `main` and require the `validate` status check. Disable direct pushes to `main` so changes reach it through a passing pull request.
+
 ## Notes
 
 - Answers are generated from retrieved PDF content and may say that information is unavailable when it is not found in the indexed context.
