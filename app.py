@@ -20,6 +20,8 @@ with st.expander("How to use", expanded=True):
 # SESSION
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "document_id" not in st.session_state:
+    st.session_state.document_id = None
 
 # SIDEBAR
 with st.sidebar:
@@ -38,7 +40,10 @@ with st.sidebar:
         if st.button("Process PDF", type="primary"):
             with st.spinner("Processing PDF..."):
                 try:
-                    ingest_pdf(pdf_path, reset_database=reset)
+                    st.session_state.document_id = ingest_pdf(
+                        pdf_path,
+                        reset_database=reset,
+                    )
                     st.success("PDF indexed successfully.")
                 except Exception as e:
                     st.error(str(e))
@@ -65,7 +70,13 @@ if question:
     with st.chat_message("assistant"):
         with st.spinner("Searching PDF..."):
             try:
-                result = answer_question(question)
+                if not st.session_state.document_id:
+                    raise ValueError("Process a PDF before asking a question.")
+
+                result = answer_question(
+                    question,
+                    st.session_state.document_id,
+                )
                 answer = result["answer"]
                 st.markdown(answer)
 

@@ -86,6 +86,7 @@ The first run may take longer because the embedding model must be downloaded and
 ```text
 app.py             Streamlit user interface
 models.py          Cached Sentence Transformers model factory
+database.py        Cached ChromaDB client and collection
 ingest.py          PDF ingestion, chunking, embedding, and storage
 pdf_processor.py   Text, table, and image extraction
 rag.py             ChromaDB retrieval and answer generation

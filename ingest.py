@@ -1,11 +1,17 @@
+import hashlib
 import os
 import shutil
 
-import chromadb
-
 from pdf_processor import PDFProcessor
 from llm import analyze_image
+from database import clear_chroma_cache, get_collection
 from models import get_embedding_model
+
+
+def get_document_id(pdf_path):
+    with open(pdf_path, "rb") as file:
+        return hashlib.sha256(file.read()).hexdigest()[:16]
+
 
 def chunk_text(
     text,
@@ -38,17 +44,6 @@ def chunk_text(
     return chunks
 
 
-def get_collection():
-
-    client = chromadb.PersistentClient(
-        path="data/chroma"
-    )
-
-    return client.get_or_create_collection(
-        name="pdf_documents"
-    )
-
-
 def ingest_pdf(
     pdf_path,
     reset_database=False
@@ -57,6 +52,8 @@ def ingest_pdf(
     print(
         f"\nProcessing {pdf_path}"
     )
+
+    document_id = get_document_id(pdf_path)
 
     # =========================================
     # RESET
@@ -71,6 +68,8 @@ def ingest_pdf(
             shutil.rmtree(
                 "data/chroma"
             )
+
+        clear_chroma_cache()
 
     collection = get_collection()
 
@@ -161,6 +160,7 @@ def ingest_pdf(
         ):
 
             chunk_id = (
+                f"{document_id}_"
                 f"{document['id']}_"
                 f"{chunk_number}"
             )
@@ -174,6 +174,7 @@ def ingest_pdf(
             )
 
             metadatas.append({
+                "document_id": document_id,
                 "source": (
                     document["source"]
                 ),
@@ -228,6 +229,8 @@ def ingest_pdf(
     print(
         "================================\n"
     )
+
+    return document_id
 
 
 if __name__ == "__main__":

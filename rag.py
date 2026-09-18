@@ -1,22 +1,21 @@
-import chromadb
-
+from database import get_collection
 from llm import ask_llm
 from models import get_embedding_model
 
 
-chroma = chromadb.PersistentClient(path="data/chroma")
+def retrieve(question, document_id, k=5):
 
-
-collection = chroma.get_or_create_collection(name="pdf_documents")
-
-
-def retrieve(question, k=5):
+    collection = get_collection()
 
     query_embedding = get_embedding_model().encode(
         [question], normalize_embeddings=True
     )[0].tolist()
 
-    results = collection.query(query_embeddings=[query_embedding], n_results=k)
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=k,
+        where={"document_id": document_id},
+    )
 
     documents = results["documents"][0]
 
@@ -31,9 +30,9 @@ def retrieve(question, k=5):
     return output
 
 
-def answer_question(question):
+def answer_question(question, document_id):
 
-    results = retrieve(question)
+    results = retrieve(question, document_id)
 
     if not results:
 

@@ -3,10 +3,10 @@
 ## High Priority
 
 - [x] Cache the Sentence Transformers model with Streamlit `st.cache_resource`.
-- [ ] Cache the ChromaDB client and collection to avoid recreating them on reruns.
-- [ ] Add a document ID or filename to Chroma metadata.
-- [ ] Filter retrieval to the currently selected PDF.
-- [ ] Prevent duplicate document IDs when indexing multiple PDFs.
+- [x] Cache the ChromaDB client and collection to avoid recreating them on reruns.
+- [x] Add a document ID or filename to Chroma metadata.
+- [x] Filter retrieval to the currently selected PDF.
+- [x] Prevent duplicate document IDs when indexing multiple PDFs.
 - [ ] Handle empty Chroma collections safely before querying results.
 - [ ] Show clear errors when Ollama is unavailable or the configured model is missing.
 
