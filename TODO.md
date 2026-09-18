@@ -7,8 +7,8 @@
 - [x] Add a document ID or filename to Chroma metadata.
 - [x] Filter retrieval to the currently selected PDF.
 - [x] Prevent duplicate document IDs when indexing multiple PDFs.
-- [ ] Handle empty Chroma collections safely before querying results.
-- [ ] Show clear errors when Ollama is unavailable or the configured model is missing.
+- [x] Handle empty Chroma collections safely before querying results.
+- [x] Show clear errors when Ollama is unavailable or the configured model is missing.
 
 ## Retrieval Quality
 
@@ -39,12 +39,12 @@
 
 ## Testing
 
-- [ ] Add tests for `chunk_text()` with empty, short, overlapping, and long text.
-- [ ] Test PDF text, table, and image extraction.
-- [ ] Test unique IDs across multiple PDFs.
-- [ ] Test retrieval with an empty database.
-- [ ] Test metadata and source page output.
-- [ ] Add a smoke test for the Streamlit application startup.
+- [x] Add tests for `chunk_text()` with empty, short, overlapping, and long text.
+- [x] Test PDF text, table, and image extraction.
+- [x] Test unique IDs across multiple PDFs.
+- [x] Test retrieval with an empty database.
+- [x] Test metadata and source page output.
+- [x] Add a smoke test for the Streamlit application startup.
 
 ## Documentation and Deployment
 

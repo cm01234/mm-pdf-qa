@@ -162,4 +162,5 @@ To enforce this before merging, configure GitHub branch protection for `main` an
 - Image and chart understanding requires a vision-capable Ollama model.
 - The embedding model is downloaded by Sentence Transformers on first use.
 - The embedding model is cached by Streamlit after it is loaded.
+- If Ollama is unavailable, start it with `ollama serve`; if the model is missing, run `ollama pull qwen3-vl:8b`.
 - Keep `.env` out of version control if it contains private configuration or credentials.

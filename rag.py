@@ -7,6 +7,9 @@ def retrieve(question, document_id, k=5):
 
     collection = get_collection()
 
+    if collection.count() == 0:
+        return []
+
     query_embedding = get_embedding_model().encode(
         [question], normalize_embeddings=True
     )[0].tolist()
@@ -17,9 +20,14 @@ def retrieve(question, document_id, k=5):
         where={"document_id": document_id},
     )
 
-    documents = results["documents"][0]
+    documents = results.get("documents") or []
+    metadatas = results.get("metadatas") or []
 
-    metadatas = results["metadatas"][0]
+    if not documents or not metadatas:
+        return []
+
+    documents = documents[0] or []
+    metadatas = metadatas[0] or []
 
     output = []
 
