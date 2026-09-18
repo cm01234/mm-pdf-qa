@@ -32,6 +32,7 @@ htmlcov/
 .idea/
 
 # Project-generated files
+/os
 data/chroma/
 data/images/
 documents/*
