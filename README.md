@@ -198,6 +198,13 @@ pip install pip-audit
 pip-audit -r requirements.txt
 ```
 
+CI ignores only these five current ChromaDB advisories because ChromaDB 1.5.9
+is the latest available release and none has a published fix version:
+`PYSEC-2026-311`, `PYSEC-2026-3813`, `PYSEC-2026-3814`,
+`PYSEC-2026-3815`, and the duplicate `PYSEC-2026-311` report. This is a
+temporary, reviewed exception rather than a claim that the dependency is
+vulnerability-free. The audit still fails on advisories with available fixes.
+
 ## Git Workflow
 
 Use `dev` for new work and push it to GitHub for CI validation:
