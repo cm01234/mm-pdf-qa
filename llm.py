@@ -1,20 +1,21 @@
 import os
 import base64
 from pathlib import Path
+from typing import Any
 
 import ollama
 from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b")
+MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:4b")
 
 
 class OllamaConfigurationError(RuntimeError):
     """Raised when Ollama is unavailable or the configured model is missing."""
 
 
-def chat_with_ollama(**kwargs):
+def chat_with_ollama(**kwargs: Any) -> Any:
     try:
         return ollama.chat(**kwargs)
     except ollama.ResponseError as error:
@@ -49,7 +50,7 @@ def chat_with_ollama(**kwargs):
         raise
 
 
-def ask_llm(prompt):
+def ask_llm(prompt: str) -> str:
     """
     Ask the local Qwen model a text-only question.
     """
@@ -62,7 +63,7 @@ def ask_llm(prompt):
     return response["message"]["content"]
 
 
-def image_to_base64(image_path):
+def image_to_base64(image_path: str | os.PathLike[str]) -> str:
     """
     Convert image to base64.
     """
@@ -72,7 +73,7 @@ def image_to_base64(image_path):
     return base64.b64encode(data).decode("utf-8")
 
 
-def analyze_image(image_path, page_number):
+def analyze_image(image_path: str | os.PathLike[str], page_number: int) -> str:
 
     image_base64 = image_to_base64(
         image_path

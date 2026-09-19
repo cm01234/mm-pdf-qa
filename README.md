@@ -23,12 +23,12 @@ A local PDF question-answering assistant built with Streamlit, PyMuPDF, ChromaDB
 The default models are:
 
 - Embeddings: `BAAI/bge-small-en-v1.5`
-- Ollama: `qwen3-vl:8b`
+- Ollama: `qwen3-vl:4b`
 
 Pull the default Ollama model before starting the app:
 
 ```bash
-ollama pull qwen3-vl:8b
+ollama pull qwen3-vl:4b
 ```
 
 ## Setup
@@ -55,11 +55,23 @@ ollama pull qwen3-vl:8b
 4. Optionally create a `.env` file to override the defaults:
 
    ```dotenv
-   OLLAMA_MODEL=qwen3-vl:8b
+   OLLAMA_MODEL=qwen3-vl:4b
    EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+   CHROMA_PATH=data/chroma
+   CHROMA_COLLECTION=pdf_documents
+   DOCUMENTS_PATH=documents
+   IMAGE_OUTPUT_DIR=data/images
+   CHUNK_SIZE=1200
+   CHUNK_OVERLAP=200
+   RETRIEVAL_COUNT=5
    ```
 
    Do not commit `.env`. It is ignored by `.gitignore`.
+
+The chunking and retrieval defaults can be adjusted with `CHUNK_SIZE`,
+`CHUNK_OVERLAP`, and `RETRIEVAL_COUNT`. The application retrieves additional
+candidates, reranks them locally, and marks answers that cannot be supported by
+the retrieved PDF context.
 
 ## Run
 
@@ -138,7 +150,7 @@ python -m py_compile app.py ingest.py models.py pdf_processor.py rag.py llm.py
 Run the test suite locally:
 
 ```bash
-python -m pytest
+PYTHONPATH=. venv/bin/python -m pytest -q
 ```
 
 ## Git Workflow
@@ -162,5 +174,5 @@ To enforce this before merging, configure GitHub branch protection for `main` an
 - Image and chart understanding requires a vision-capable Ollama model.
 - The embedding model is downloaded by Sentence Transformers on first use.
 - The embedding model is cached by Streamlit after it is loaded.
-- If Ollama is unavailable, start it with `ollama serve`; if the model is missing, run `ollama pull qwen3-vl:8b`.
+- If Ollama is unavailable, start it with `ollama serve`; if the model is missing, run `ollama pull qwen3-vl:4b`.
 - Keep `.env` out of version control if it contains private configuration or credentials.
