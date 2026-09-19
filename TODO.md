@@ -34,11 +34,11 @@
 
 ## Code Quality
 
-- [ ] Replace print-based status reporting with structured logging.
-- [ ] Move configuration values such as paths, chunk size, retrieval count, and model names into environment variables.
-- [ ] Add type hints to public functions.
-- [ ] Break large ingestion and UI functions into smaller testable units.
-- [ ] Remove unused imports and standardize formatting.
+- [x] Replace print-based status reporting with structured logging.
+- [x] Move configuration values such as paths, chunk size, retrieval count, and model names into environment variables.
+- [x] Add type hints to public functions.
+- [x] Break large ingestion and UI functions into smaller testable units.
+- [x] Remove unused imports and standardize formatting.
 
 ## Testing
 
@@ -65,13 +65,16 @@ Completed:
 - Document IDs and PDF-specific retrieval filtering
 - Empty collection handling and Ollama error messages
 - PDF processing progress bar and Streamlit progress updates
+- Paragraph-aware and table-row-aware chunking
+- Candidate expansion, retrieval reranking, and answer validation
+- Environment-backed configuration, logging, type hints, and ingestion refactoring
 - Regression tests for ingestion, retrieval, caching, Ollama errors, and app startup
 
 Next:
 
 1. Report page-level and image-analysis progress during ingestion.
 2. Avoid saving uploaded PDFs on every Streamlit rerun.
-3. Improve chunking and preserve section, page, and table context.
+3. Support using more than one PDF file.
 4. Add document management controls for listing and removing indexed PDFs.
-5. Add retrieval reranking and answer validation.
-6. Finish configuration, logging, type hints, and documentation improvements.
+5. Add database save and load controls.
+6. Finish documentation and deployment improvements.

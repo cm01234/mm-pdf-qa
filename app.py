@@ -4,6 +4,7 @@ import streamlit as st
 
 from ingest import ingest_pdf
 from rag import answer_question
+from config import DOCUMENTS_PATH
 
 st.set_page_config(page_title="Local PDF CLANKER", layout="wide")
 
@@ -29,8 +30,8 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
 
     if uploaded_file:
-        os.makedirs("documents", exist_ok=True)
-        pdf_path = os.path.join("documents", uploaded_file.name)
+        os.makedirs(DOCUMENTS_PATH, exist_ok=True)
+        pdf_path = os.path.join(DOCUMENTS_PATH, uploaded_file.name)
 
         with open(pdf_path, "wb") as file:
             file.write(uploaded_file.getbuffer())

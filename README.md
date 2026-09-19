@@ -57,9 +57,21 @@ ollama pull qwen3-vl:4b
    ```dotenv
    OLLAMA_MODEL=qwen3-vl:4b
    EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+   CHROMA_PATH=data/chroma
+   CHROMA_COLLECTION=pdf_documents
+   DOCUMENTS_PATH=documents
+   IMAGE_OUTPUT_DIR=data/images
+   CHUNK_SIZE=1200
+   CHUNK_OVERLAP=200
+   RETRIEVAL_COUNT=5
    ```
 
    Do not commit `.env`. It is ignored by `.gitignore`.
+
+The chunking and retrieval defaults can be adjusted with `CHUNK_SIZE`,
+`CHUNK_OVERLAP`, and `RETRIEVAL_COUNT`. The application retrieves additional
+candidates, reranks them locally, and marks answers that cannot be supported by
+the retrieved PDF context.
 
 ## Run
 
@@ -138,7 +150,7 @@ python -m py_compile app.py ingest.py models.py pdf_processor.py rag.py llm.py
 Run the test suite locally:
 
 ```bash
-python -m pytest
+PYTHONPATH=. venv/bin/python -m pytest -q
 ```
 
 ## Git Workflow

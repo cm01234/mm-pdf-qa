@@ -1,12 +1,22 @@
 from pathlib import Path
 import hashlib
+import logging
+from typing import Any
 
 import pymupdf
+
+from config import IMAGE_OUTPUT_DIR
+
+logger = logging.getLogger(__name__)
 
 
 class PDFProcessor:
 
-    def __init__(self, pdf_path, output_dir="data/images"):
+    def __init__(
+        self,
+        pdf_path: str | Path,
+        output_dir: str | Path = IMAGE_OUTPUT_DIR,
+    ) -> None:
 
         self.pdf_path = Path(pdf_path)
 
@@ -14,7 +24,7 @@ class PDFProcessor:
 
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def extract(self):
+    def extract(self) -> list[dict[str, Any]]:
 
         doc = pymupdf.open(self.pdf_path)
 
@@ -74,9 +84,8 @@ class PDFProcessor:
                                 }
                             )
 
-            except Exception as e:
-
-                print("Table extraction error:", e)
+            except Exception:
+                logger.warning("Table extraction error", exc_info=True)
 
             # =========================================
             # IMAGES
@@ -127,9 +136,8 @@ class PDFProcessor:
                         }
                     )
 
-                except Exception as e:
-
-                    print("Image extraction error:", e)
+                except Exception:
+                    logger.warning("Image extraction error", exc_info=True)
 
         doc.close()
 

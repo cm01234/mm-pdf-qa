@@ -1,24 +1,29 @@
 import hashlib
+import logging
 import os
 import re
 import shutil
+from typing import Any, Callable
 
 from pdf_processor import PDFProcessor
 from llm import OllamaConfigurationError, analyze_image
 from database import clear_chroma_cache, get_collection
 from models import get_embedding_model
+from config import CHUNK_OVERLAP, CHUNK_SIZE, CHROMA_PATH
+
+logger = logging.getLogger(__name__)
 
 
-def get_document_id(pdf_path):
+def get_document_id(pdf_path: str | os.PathLike[str]) -> str:
     with open(pdf_path, "rb") as file:
         return hashlib.sha256(file.read()).hexdigest()[:16]
 
 
 def chunk_text(
-    text,
-    chunk_size=1200,
-    overlap=200
-):
+    text: str,
+    chunk_size: int = CHUNK_SIZE,
+    overlap: int = CHUNK_OVERLAP,
+) -> list[str]:
 
     text = text.strip()
 
@@ -64,7 +69,7 @@ def chunk_text(
     return chunks
 
 
-def _split_text(text, chunk_size, overlap):
+def _split_text(text: str, chunk_size: int, overlap: int) -> list[str]:
 
     if len(text) <= chunk_size:
         return [text]
@@ -88,7 +93,7 @@ def _split_text(text, chunk_size, overlap):
     return chunks
 
 
-def chunk_table_text(text, chunk_size=1200):
+def chunk_table_text(text: str, chunk_size: int = CHUNK_SIZE) -> list[str]:
 
     rows = [
         row.strip()
@@ -117,19 +122,99 @@ def chunk_table_text(text, chunk_size=1200):
     return chunks
 
 
-def ingest_pdf(
-    pdf_path,
-    reset_database=False,
-    progress_callback=None,
-):
+def _prepare_document_text(document: dict[str, Any]) -> str:
 
-    def report_progress(progress, message):
+    if document["type"] != "image":
+        return document["text"]
+
+    logger.info("Analyzing image on page %s", document["page"])
+
+    try:
+        description = analyze_image(
+            document["image_path"],
+            document["page"],
+        )
+        return (
+            f"PDF: {document['source']}\n"
+            f"Page: {document['page']}\n"
+            f"Type: image/chart\n\n"
+            f"{description}"
+        )
+    except OllamaConfigurationError:
+        raise
+    except Exception as error:
+        logger.warning(
+            "Vision error on page %s: %s",
+            document["page"],
+            error,
+            exc_info=True,
+        )
+        return document["text"]
+
+
+def _append_document_chunks(
+    document: dict[str, Any],
+    document_id: str,
+    text: str,
+    ids: list[str],
+    texts: list[str],
+    metadatas: list[dict[str, Any]],
+) -> None:
+
+    chunks = (
+        chunk_table_text(text)
+        if document["type"] == "table"
+        else chunk_text(text)
+    )
+
+    for chunk_number, chunk in enumerate(chunks):
+        ids.append(f"{document_id}_{document['id']}_{chunk_number}")
+        texts.append(chunk)
+        metadatas.append({
+            "document_id": document_id,
+            "source": document["source"],
+            "page": document["page"],
+            "type": document["type"],
+        })
+
+
+def _index_chunks(
+    collection: Any,
+    texts: list[str],
+    ids: list[str],
+    metadatas: list[dict[str, Any]],
+    report_progress: Callable[[float, str], None],
+) -> None:
+
+    logger.info("Creating %s embeddings", len(texts))
+    embeddings = get_embedding_model().encode(
+        texts,
+        normalize_embeddings=True,
+        show_progress_bar=True,
+    ).tolist()
+    report_progress(0.9, f"Created {len(texts)} embeddings")
+
+    collection.upsert(
+        ids=ids,
+        documents=texts,
+        embeddings=embeddings,
+        metadatas=metadatas,
+    )
+    report_progress(1.0, "PDF indexing complete")
+    logger.info("PDF successfully indexed. Chunks: %s", len(texts))
+
+
+def ingest_pdf(
+    pdf_path: str | os.PathLike[str],
+    reset_database: bool = False,
+    progress_callback: Callable[[float, str], None] | None = None,
+) -> str:
+
+    def report_progress(progress: float, message: str) -> None:
         if progress_callback:
             progress_callback(progress, message)
 
-    print(
-        f"\nProcessing {pdf_path}"
-    )
+    logger.info("Processing %s", pdf_path)
 
     document_id = get_document_id(pdf_path)
 
@@ -139,13 +224,9 @@ def ingest_pdf(
 
     if reset_database:
 
-        if os.path.exists(
-            "data/chroma"
-        ):
+        if os.path.exists(CHROMA_PATH):
 
-            shutil.rmtree(
-                "data/chroma"
-            )
+            shutil.rmtree(CHROMA_PATH)
 
         clear_chroma_cache()
 
@@ -162,9 +243,7 @@ def ingest_pdf(
     documents = processor.extract()
     report_progress(0.2, f"Extracted {len(documents)} PDF objects")
 
-    print(
-        f"Extracted {len(documents)} objects"
-    )
+    logger.info("Extracted %s objects", len(documents))
 
     texts = []
     ids = []
@@ -178,150 +257,22 @@ def ingest_pdf(
 
     for document_number, document in enumerate(documents, start=1):
 
-        doc_type = document[
-            "type"
-        ]
-
-        # -------------------------------------
-        # IMAGE / CHART
-        # -------------------------------------
-
-        if doc_type == "image":
-
-            print(
-                f"Analyzing image "
-                f"on page "
-                f"{document['page']}"
-            )
-
-            try:
-
-                description = analyze_image(
-                    document["image_path"],
-                    document["page"]
-                )
-
-                text = (
-                    f"PDF: "
-                    f"{document['source']}\n"
-                    f"Page: "
-                    f"{document['page']}\n"
-                    f"Type: "
-                    f"image/chart\n\n"
-                    f"{description}"
-                )
-
-            except OllamaConfigurationError:
-                raise
-
-            except Exception as e:
-
-                print(
-                    "Vision error:",
-                    e
-                )
-
-                text = document[
-                    "text"
-                ]
-
-        else:
-
-            text = document[
-                "text"
-            ]
-
-        # -------------------------------------
-        # CHUNK
-        # -------------------------------------
-
-        chunks = (
-            chunk_table_text(text)
-            if document["type"] == "table"
-            else chunk_text(text)
+        text = _prepare_document_text(document)
+        _append_document_chunks(
+            document,
+            document_id,
+            text,
+            ids,
+            texts,
+            metadatas,
         )
-
-        for chunk_number, chunk in enumerate(
-            chunks
-        ):
-
-            chunk_id = (
-                f"{document_id}_"
-                f"{document['id']}_"
-                f"{chunk_number}"
-            )
-
-            ids.append(
-                chunk_id
-            )
-
-            texts.append(
-                chunk
-            )
-
-            metadatas.append({
-                "document_id": document_id,
-                "source": (
-                    document["source"]
-                ),
-                "page": (
-                    document["page"]
-                ),
-                "type": (
-                    document["type"]
-                )
-            })
 
         report_progress(
             0.2 + (0.6 * document_number / total_documents),
             f"Processed PDF object {document_number} of {len(documents)}",
         )
 
-    # =========================================
-    # EMBEDDINGS
-    # =========================================
-
-    print(
-        f"Creating "
-        f"{len(texts)} embeddings..."
-    )
-
-    embeddings = get_embedding_model().encode(
-        texts,
-        normalize_embeddings=True,
-        show_progress_bar=True
-    )
-
-    embeddings = embeddings.tolist()
-    report_progress(0.9, f"Created {len(texts)} embeddings")
-
-    # =========================================
-    # STORE IN CHROMA
-    # =========================================
-
-    collection.upsert(
-        ids=ids,
-        documents=texts,
-        embeddings=embeddings,
-        metadatas=metadatas
-    )
-    report_progress(1.0, "PDF indexing complete")
-
-    print(
-        "\n================================"
-    )
-
-    print(
-        "PDF successfully indexed."
-    )
-
-    print(
-        f"Chunks: {len(texts)}"
-    )
-
-    print(
-        "================================\n"
-    )
+    _index_chunks(collection, texts, ids, metadatas, report_progress)
 
     return document_id
 

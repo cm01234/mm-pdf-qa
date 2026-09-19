@@ -1,8 +1,10 @@
 import re
+from typing import Any
 
 from database import get_collection
 from llm import ask_llm
 from models import get_embedding_model
+from config import RETRIEVAL_COUNT
 
 STOPWORDS = {
     "about", "after", "again", "also", "answer", "and", "are", "been",
@@ -12,7 +14,7 @@ STOPWORDS = {
 }
 
 
-def _answer_is_supported(answer, context_text):
+def _answer_is_supported(answer: str, context_text: str) -> bool:
 
     refusal_terms = (
         "not available in the pdf",
@@ -33,7 +35,11 @@ def _answer_is_supported(answer, context_text):
     return bool(answer_terms & context_terms)
 
 
-def _rerank_results(question, results, limit):
+def _rerank_results(
+    question: str,
+    results: list[dict[str, Any]],
+    limit: int,
+) -> list[dict[str, Any]]:
 
     query_terms = set(re.findall(r"[a-z0-9]{3,}", question.lower()))
 
@@ -51,7 +57,11 @@ def _rerank_results(question, results, limit):
     return [result for _, _, result in scored_results[:limit]]
 
 
-def retrieve(question, document_id, k=5):
+def retrieve(
+    question: str,
+    document_id: str,
+    k: int = RETRIEVAL_COUNT,
+) -> list[dict[str, Any]]:
 
     collection = get_collection()
 
@@ -88,7 +98,7 @@ def retrieve(question, document_id, k=5):
     return _rerank_results(question, output, k)
 
 
-def answer_question(question, document_id):
+def answer_question(question: str, document_id: str) -> dict[str, Any]:
 
     results = retrieve(question, document_id)
 
