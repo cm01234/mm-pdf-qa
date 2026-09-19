@@ -40,6 +40,23 @@ class FakeProcessor:
         ]
 
 
+class FakeImageProcessor:
+    def __init__(self, pdf_path):
+        self.pdf_path = pdf_path
+
+    def extract(self):
+        return [
+            {
+                "id": "image_1_1",
+                "type": "image",
+                "page": 1,
+                "image_path": "image.png",
+                "text": "Image from page 1",
+                "source": self.pdf_path.name,
+            }
+        ]
+
+
 def test_ingestion_adds_document_metadata_and_unique_ids(monkeypatch, tmp_path):
     first_pdf = tmp_path / "first.pdf"
     second_pdf = tmp_path / "second.pdf"
@@ -92,3 +109,26 @@ def test_ingestion_reports_progress(monkeypatch, tmp_path):
     assert values[0] == 0.2
     assert values[-1] == 1.0
     assert progress_updates[-1][1] == "PDF indexing complete"
+
+
+def test_ingestion_reports_page_and_image_progress(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "image-progress.pdf"
+    pdf_path.write_bytes(b"image progress document")
+
+    monkeypatch.setattr(ingest, "PDFProcessor", FakeImageProcessor)
+    monkeypatch.setattr(ingest, "analyze_image", lambda path, page: "Image details")
+    monkeypatch.setattr(ingest, "get_collection", lambda: FakeCollection())
+    monkeypatch.setattr(ingest, "get_embedding_model", lambda: FakeEmbeddingModel())
+
+    progress_updates = []
+    ingest.ingest_pdf(
+        pdf_path,
+        progress_callback=lambda value, message: progress_updates.append(
+            (value, message)
+        ),
+    )
+
+    messages = [message for _, message in progress_updates]
+    assert "Processing page 1" in messages
+    assert "Analyzing image on page 1" in messages
+    assert "Image analysis complete on page 1" in messages

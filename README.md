@@ -85,11 +85,14 @@ Then open the local URL shown by Streamlit, usually `http://localhost:8501`.
 
 ## Usage
 
-1. Upload a PDF from the sidebar.
+1. Upload one or more PDFs from the sidebar.
 2. Select **Clear existing database** if you want to replace the current ChromaDB collection.
-3. Click **Process PDF** and wait for indexing to finish.
+3. Click **Process PDF** and wait for all files to finish indexing.
 4. Ask questions in the chat input.
 5. Review the listed sources and page numbers below each answer.
+
+The sidebar lists indexed PDFs and provides controls to remove an individual
+document or save and load the complete ChromaDB database as a ZIP archive.
 
 The first run may take longer because the embedding model must be downloaded and loaded.
 

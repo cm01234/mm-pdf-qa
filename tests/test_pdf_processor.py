@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 import pdf_processor
 
 
@@ -64,3 +65,32 @@ def test_extracts_text_table_and_image(monkeypatch, tmp_path):
     image_path = Path(image_document["image_path"])
     assert image_path.exists()
     assert image_path.read_bytes() == b"image bytes"
+
+
+def test_extract_reports_invalid_pdf(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        pdf_processor.pymupdf,
+        "open",
+        lambda path: (_ for _ in ()).throw(RuntimeError("invalid PDF")),
+    )
+
+    processor = pdf_processor.PDFProcessor(tmp_path / "invalid.pdf")
+
+    with pytest.raises(ValueError, match="invalid or corrupted"):
+        processor.extract()
+
+
+def test_extract_reports_empty_pdf(monkeypatch, tmp_path):
+    class EmptyDocument:
+        def __iter__(self):
+            return iter([])
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(pdf_processor.pymupdf, "open", lambda path: EmptyDocument())
+
+    processor = pdf_processor.PDFProcessor(tmp_path / "empty.pdf")
+
+    with pytest.raises(ValueError, match="no extractable"):
+        processor.extract()

@@ -20,17 +20,17 @@
 
 ## Ingestion and User Experience
 
-- [ ] Allow using more than one PDF file.
+- [x] Allow using more than one PDF file.
 - [x] Add a progress bar showing PDF processing progress to the user.
-- [ ] Avoid saving the uploaded PDF on every Streamlit rerun.
-- [ ] Save uploaded files only when the user clicks **Process PDF**.
-- [ ] Sanitize uploaded filenames before writing them to `documents/`.
+- [x] Avoid saving the uploaded PDF on every Streamlit rerun.
+- [x] Save uploaded files only when the user clicks **Process PDF**.
+- [x] Sanitize uploaded filenames before writing them to `documents/`.
 - [x] Display ingestion progress in the Streamlit interface instead of only printing to the terminal.
-- [ ] Report the current page, extracted object count, image analysis progress, and embedding progress.
-- [ ] Detect and report empty or invalid PDFs.
-- [ ] Add a visible list of currently indexed documents.
-- [ ] Add a button to remove one indexed document without clearing the entire database.
-- [ ] Allow saving and loading databases.
+- [x] Report the current page, extracted object count, image analysis progress, and embedding progress.
+- [x] Detect and report empty or invalid PDFs.
+- [x] Add a visible list of currently indexed documents.
+- [x] Add a button to remove one indexed document without clearing the entire database.
+- [x] Allow saving and loading databases.
 
 ## Code Quality
 
@@ -72,9 +72,4 @@ Completed:
 
 Next:
 
-1. Report page-level and image-analysis progress during ingestion.
-2. Avoid saving uploaded PDFs on every Streamlit rerun.
-3. Support using more than one PDF file.
-4. Add document management controls for listing and removing indexed PDFs.
-5. Add database save and load controls.
-6. Finish documentation and deployment improvements.
+1. Finish documentation and deployment improvements.

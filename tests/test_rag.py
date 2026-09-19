@@ -65,6 +65,18 @@ def test_retrieve_reranks_candidates_by_query_terms(monkeypatch):
     assert [result["metadata"]["page"] for result in results] == [3, 2]
 
 
+def test_retrieve_filters_multiple_document_ids(monkeypatch):
+    collection = FakeCollection()
+    monkeypatch.setattr(rag, "get_collection", lambda: collection)
+    monkeypatch.setattr(rag, "get_embedding_model", lambda: FakeEmbeddingModel())
+
+    rag.retrieve("question", ["doc-1", "doc-2"])
+
+    assert collection.query_arguments["where"] == {
+        "document_id": {"$in": ["doc-1", "doc-2"]}
+    }
+
+
 def test_retrieve_skips_embedding_for_empty_collection(monkeypatch):
     collection = FakeCollection(count=0)
 

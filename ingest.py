@@ -254,10 +254,36 @@ def ingest_pdf(
     # =========================================
 
     total_documents = len(documents) or 1
+    reported_pages: set[int] = set()
 
     for document_number, document in enumerate(documents, start=1):
 
+        page_number = document["page"]
+        page_progress = 0.2 + (
+            0.6 * (document_number - 1) / total_documents
+        )
+
+        if page_number not in reported_pages:
+            report_progress(
+                page_progress,
+                f"Processing page {page_number}",
+            )
+            reported_pages.add(page_number)
+
+        if document["type"] == "image":
+            report_progress(
+                page_progress,
+                f"Analyzing image on page {page_number}",
+            )
+
         text = _prepare_document_text(document)
+
+        if document["type"] == "image":
+            report_progress(
+                page_progress,
+                f"Image analysis complete on page {page_number}",
+            )
+
         _append_document_chunks(
             document,
             document_id,

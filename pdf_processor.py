@@ -26,7 +26,13 @@ class PDFProcessor:
 
     def extract(self) -> list[dict[str, Any]]:
 
-        doc = pymupdf.open(self.pdf_path)
+        try:
+            doc = pymupdf.open(self.pdf_path)
+        except Exception as error:
+            raise ValueError(
+                f"Could not open PDF '{self.pdf_path.name}'. "
+                "The file may be invalid or corrupted."
+            ) from error
 
         documents = []
 
@@ -140,5 +146,11 @@ class PDFProcessor:
                     logger.warning("Image extraction error", exc_info=True)
 
         doc.close()
+
+        if not documents:
+            raise ValueError(
+                f"PDF '{self.pdf_path.name}' contains no extractable text, "
+                "tables, or images."
+            )
 
         return documents

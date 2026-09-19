@@ -59,7 +59,7 @@ def _rerank_results(
 
 def retrieve(
     question: str,
-    document_id: str,
+    document_id: str | list[str],
     k: int = RETRIEVAL_COUNT,
 ) -> list[dict[str, Any]]:
 
@@ -73,11 +73,16 @@ def retrieve(
     )[0].tolist()
 
     candidate_count = max(k * 3, k)
+    document_filter = (
+        {"document_id": document_id}
+        if isinstance(document_id, str)
+        else {"document_id": {"$in": document_id}}
+    )
 
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=candidate_count,
-        where={"document_id": document_id},
+        where=document_filter,
     )
 
     documents = results.get("documents") or []
@@ -98,7 +103,10 @@ def retrieve(
     return _rerank_results(question, output, k)
 
 
-def answer_question(question: str, document_id: str) -> dict[str, Any]:
+def answer_question(
+    question: str,
+    document_id: str | list[str],
+) -> dict[str, Any]:
 
     results = retrieve(question, document_id)
 
