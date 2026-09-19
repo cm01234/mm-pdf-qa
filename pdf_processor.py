@@ -26,15 +26,19 @@ class PDFProcessor:
 
     def extract(self) -> list[dict[str, Any]]:
 
-        doc = pymupdf.open(self.pdf_path)
+        try:
+            doc = pymupdf.open(self.pdf_path)
+        except Exception as error:
+            raise ValueError(
+                f"Could not open PDF '{self.pdf_path.name}'. "
+                "The file may be invalid or corrupted."
+            ) from error
 
         documents = []
 
         for page_number, page in enumerate(doc, start=1):
 
-            # =========================================
             # TEXT
-            # =========================================
 
             text = page.get_text("text")
 
@@ -50,9 +54,7 @@ class PDFProcessor:
                     }
                 )
 
-            # =========================================
             # TABLES
-            # =========================================
 
             try:
 
@@ -87,9 +89,7 @@ class PDFProcessor:
             except Exception:
                 logger.warning("Table extraction error", exc_info=True)
 
-            # =========================================
             # IMAGES
-            # =========================================
 
             images = page.get_images(full=True)
 
@@ -140,5 +140,11 @@ class PDFProcessor:
                     logger.warning("Image extraction error", exc_info=True)
 
         doc.close()
+
+        if not documents:
+            raise ValueError(
+                f"PDF '{self.pdf_path.name}' contains no extractable text, "
+                "tables, or images."
+            )
 
         return documents

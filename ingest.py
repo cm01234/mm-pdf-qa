@@ -218,9 +218,7 @@ def ingest_pdf(
 
     document_id = get_document_id(pdf_path)
 
-    # =========================================
     # RESET
-    # =========================================
 
     if reset_database:
 
@@ -232,9 +230,7 @@ def ingest_pdf(
 
     collection = get_collection()
 
-    # =========================================
     # EXTRACT
-    # =========================================
 
     processor = PDFProcessor(
         pdf_path
@@ -249,15 +245,39 @@ def ingest_pdf(
     ids = []
     metadatas = []
 
-    # =========================================
     # PROCESS
-    # =========================================
 
     total_documents = len(documents) or 1
+    reported_pages: set[int] = set()
 
     for document_number, document in enumerate(documents, start=1):
 
+        page_number = document["page"]
+        page_progress = 0.2 + (
+            0.6 * (document_number - 1) / total_documents
+        )
+
+        if page_number not in reported_pages:
+            report_progress(
+                page_progress,
+                f"Processing page {page_number}",
+            )
+            reported_pages.add(page_number)
+
+        if document["type"] == "image":
+            report_progress(
+                page_progress,
+                f"Analyzing image on page {page_number}",
+            )
+
         text = _prepare_document_text(document)
+
+        if document["type"] == "image":
+            report_progress(
+                page_progress,
+                f"Image analysis complete on page {page_number}",
+            )
+
         _append_document_chunks(
             document,
             document_id,

@@ -20,17 +20,17 @@
 
 ## Ingestion and User Experience
 
-- [ ] Allow using more than one PDF file.
+- [x] Allow using more than one PDF file.
 - [x] Add a progress bar showing PDF processing progress to the user.
-- [ ] Avoid saving the uploaded PDF on every Streamlit rerun.
-- [ ] Save uploaded files only when the user clicks **Process PDF**.
-- [ ] Sanitize uploaded filenames before writing them to `documents/`.
+- [x] Avoid saving the uploaded PDF on every Streamlit rerun.
+- [x] Save uploaded files only when the user clicks **Process PDF**.
+- [x] Sanitize uploaded filenames before writing them to `documents/`.
 - [x] Display ingestion progress in the Streamlit interface instead of only printing to the terminal.
-- [ ] Report the current page, extracted object count, image analysis progress, and embedding progress.
-- [ ] Detect and report empty or invalid PDFs.
-- [ ] Add a visible list of currently indexed documents.
-- [ ] Add a button to remove one indexed document without clearing the entire database.
-- [ ] Allow saving and loading databases.
+- [x] Report the current page, extracted object count, image analysis progress, and embedding progress.
+- [x] Detect and report empty or invalid PDFs.
+- [x] Add a visible list of currently indexed documents.
+- [x] Add a button to remove one indexed document without clearing the entire database.
+- [x] Allow saving and loading databases.
 
 ## Code Quality
 
@@ -51,11 +51,11 @@
 
 ## Documentation and Deployment
 
-- [ ] Document supported Python and Ollama versions.
-- [ ] Add an `.env.example` file with safe default configuration.
-- [ ] Document how to rebuild or clear the ChromaDB index.
-- [ ] Document model memory requirements and alternative smaller Ollama models.
-- [ ] Add a license and contribution guidelines if the project will be shared.
+- [x] Document supported Python and Ollama versions.
+- [x] Add an `.env.example` file with safe default configuration.
+- [x] Document how to rebuild or clear the ChromaDB index.
+- [x] Document model memory requirements and alternative smaller Ollama models.
+- [x] Decide not to create a license file; contribution guidelines remain available.
 
 ## Suggested Implementation Order
 
@@ -67,14 +67,12 @@ Completed:
 - PDF processing progress bar and Streamlit progress updates
 - Paragraph-aware and table-row-aware chunking
 - Candidate expansion, retrieval reranking, and answer validation
+- Multiple PDF indexing and document management controls
+- Database save/load, filename sanitization, and empty/invalid PDF detection
+- Upload/archive limits, localhost defaults, and dependency auditing
 - Environment-backed configuration, logging, type hints, and ingestion refactoring
 - Regression tests for ingestion, retrieval, caching, Ollama errors, and app startup
 
 Next:
 
-1. Report page-level and image-analysis progress during ingestion.
-2. Avoid saving uploaded PDFs on every Streamlit rerun.
-3. Support using more than one PDF file.
-4. Add document management controls for listing and removing indexed PDFs.
-5. Add database save and load controls.
-6. Finish documentation and deployment improvements.
+- No remaining planned items.
