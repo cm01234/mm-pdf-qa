@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b")
+MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:4b")
 
 
 class OllamaConfigurationError(RuntimeError):

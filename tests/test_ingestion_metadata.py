@@ -61,6 +61,12 @@ def test_ingestion_adds_document_metadata_and_unique_ids(monkeypatch, tmp_path):
     assert second_chunk["metadatas"][0]["document_id"] == second_id
     assert first_chunk["metadatas"][0]["source"] == "first.pdf"
     assert first_chunk["metadatas"][0]["page"] == 1
+    assert set(first_chunk["metadatas"][0]) >= {
+        "document_id",
+        "source",
+        "page",
+        "type",
+    }
     assert first_chunk["ids"] != second_chunk["ids"]
 
 

@@ -1,5 +1,6 @@
 import hashlib
 import os
+import re
 import shutil
 
 from pdf_processor import PDFProcessor
@@ -24,11 +25,51 @@ def chunk_text(
     if not text:
         return []
 
+    paragraphs = [
+        paragraph.strip()
+        for paragraph in re.split(r"\n\s*\n", text)
+        if paragraph.strip()
+    ]
+
+    if len(paragraphs) == 1:
+        return _split_text(paragraphs[0], chunk_size, overlap)
+
+    chunks = []
+    current_chunk = ""
+
+    for paragraph in paragraphs:
+        if len(paragraph) > chunk_size:
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
+            chunks.extend(_split_text(paragraph, chunk_size, overlap))
+            continue
+
+        candidate = (
+            f"{current_chunk}\n\n{paragraph}"
+            if current_chunk
+            else paragraph
+        )
+
+        if len(candidate) <= chunk_size:
+            current_chunk = candidate
+            continue
+
+        chunks.append(current_chunk)
+        current_chunk = paragraph
+
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    return chunks
+
+
+def _split_text(text, chunk_size, overlap):
+
     if len(text) <= chunk_size:
         return [text]
 
     chunks = []
-
     start = 0
 
     while start < len(text):
@@ -43,6 +84,35 @@ def chunk_text(
             break
 
         start = end - overlap
+
+    return chunks
+
+
+def chunk_table_text(text, chunk_size=1200):
+
+    rows = [
+        row.strip()
+        for row in text.splitlines()
+        if row.strip()
+    ]
+
+    if not rows:
+        return []
+
+    chunks = []
+    current_chunk = ""
+
+    for row in rows:
+        candidate = f"{current_chunk}\n{row}" if current_chunk else row
+
+        if current_chunk and len(candidate) > chunk_size:
+            chunks.append(current_chunk)
+            current_chunk = row
+        else:
+            current_chunk = candidate
+
+    if current_chunk:
+        chunks.append(current_chunk)
 
     return chunks
 
@@ -165,8 +235,10 @@ def ingest_pdf(
         # CHUNK
         # -------------------------------------
 
-        chunks = chunk_text(
-            text
+        chunks = (
+            chunk_table_text(text)
+            if document["type"] == "table"
+            else chunk_text(text)
         )
 
         for chunk_number, chunk in enumerate(
