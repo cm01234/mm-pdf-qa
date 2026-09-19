@@ -218,9 +218,7 @@ def ingest_pdf(
 
     document_id = get_document_id(pdf_path)
 
-    # =========================================
     # RESET
-    # =========================================
 
     if reset_database:
 
@@ -232,9 +230,7 @@ def ingest_pdf(
 
     collection = get_collection()
 
-    # =========================================
     # EXTRACT
-    # =========================================
 
     processor = PDFProcessor(
         pdf_path
@@ -249,9 +245,7 @@ def ingest_pdf(
     ids = []
     metadatas = []
 
-    # =========================================
     # PROCESS
-    # =========================================
 
     total_documents = len(documents) or 1
     reported_pages: set[int] = set()

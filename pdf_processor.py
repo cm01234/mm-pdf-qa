@@ -38,9 +38,7 @@ class PDFProcessor:
 
         for page_number, page in enumerate(doc, start=1):
 
-            # =========================================
             # TEXT
-            # =========================================
 
             text = page.get_text("text")
 
@@ -56,9 +54,7 @@ class PDFProcessor:
                     }
                 )
 
-            # =========================================
             # TABLES
-            # =========================================
 
             try:
 
@@ -93,9 +89,7 @@ class PDFProcessor:
             except Exception:
                 logger.warning("Table extraction error", exc_info=True)
 
-            # =========================================
             # IMAGES
-            # =========================================
 
             images = page.get_images(full=True)
 

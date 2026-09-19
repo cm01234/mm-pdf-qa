@@ -1,10 +1,19 @@
+import hmac
+import hashlib
+import ipaddress
 import os
 
 import streamlit as st
 
 from ingest import ingest_pdf
 from rag import answer_question
-from config import DOCUMENTS_PATH
+from config import (
+    APP_PASSWORD,
+    DOCUMENTS_PATH,
+    MAX_UPLOAD_BYTES,
+    PUBLIC_DEPLOYMENT,
+    STREAMLIT_SERVER_ADDRESS,
+)
 from database import (
     delete_document,
     export_database,
@@ -16,18 +25,47 @@ from file_utils import sanitize_filename
 
 def save_uploaded_pdf(uploaded_file):
     os.makedirs(DOCUMENTS_PATH, exist_ok=True)
+    file_bytes = uploaded_file.getvalue()
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
+        raise ValueError("Uploaded PDF exceeds the maximum allowed size")
+
+    file_hash = hashlib.sha256(file_bytes).hexdigest()[:12]
+    safe_name = sanitize_filename(uploaded_file.name)
+    stem, suffix = os.path.splitext(safe_name)
     pdf_path = os.path.join(
         DOCUMENTS_PATH,
-        sanitize_filename(uploaded_file.name),
+        f"{stem}_{file_hash}{suffix}",
     )
 
     with open(pdf_path, "wb") as file:
-        file.write(uploaded_file.getbuffer())
+        file.write(file_bytes)
 
     return pdf_path
 
 
 st.set_page_config(page_title="Local PDF CLANKER", layout="wide")
+
+def _is_loopback_address(address: str) -> bool:
+    if address in {"localhost", "127.0.0.1", "::1"}:
+        return True
+    try:
+        return ipaddress.ip_address(address).is_loopback
+    except ValueError:
+        return False
+
+
+requires_password = PUBLIC_DEPLOYMENT or not _is_loopback_address(
+    STREAMLIT_SERVER_ADDRESS
+)
+
+if APP_PASSWORD:
+    entered_password = st.text_input("App password", type="password")
+    if not hmac.compare_digest(entered_password, APP_PASSWORD):
+        st.info("Enter the configured app password to continue.")
+        st.stop()
+elif requires_password:
+    st.error("APP_PASSWORD must be configured for public deployments.")
+    st.stop()
 
 st.title("Local PDF CLANKER Assistant")
 st.caption("PDF + RAG + Qwen3-VL + ChromaDB")

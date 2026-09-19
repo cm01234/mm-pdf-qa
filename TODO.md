@@ -51,11 +51,11 @@
 
 ## Documentation and Deployment
 
-- [ ] Document supported Python and Ollama versions.
-- [ ] Add an `.env.example` file with safe default configuration.
-- [ ] Document how to rebuild or clear the ChromaDB index.
-- [ ] Document model memory requirements and alternative smaller Ollama models.
-- [ ] Add a license and contribution guidelines if the project will be shared.
+- [x] Document supported Python and Ollama versions.
+- [x] Add an `.env.example` file with safe default configuration.
+- [x] Document how to rebuild or clear the ChromaDB index.
+- [x] Document model memory requirements and alternative smaller Ollama models.
+- [x] Decide not to create a license file; contribution guidelines remain available.
 
 ## Suggested Implementation Order
 
@@ -67,9 +67,12 @@ Completed:
 - PDF processing progress bar and Streamlit progress updates
 - Paragraph-aware and table-row-aware chunking
 - Candidate expansion, retrieval reranking, and answer validation
+- Multiple PDF indexing and document management controls
+- Database save/load, filename sanitization, and empty/invalid PDF detection
+- Upload/archive limits, localhost defaults, and dependency auditing
 - Environment-backed configuration, logging, type hints, and ingestion refactoring
 - Regression tests for ingestion, retrieval, caching, Ollama errors, and app startup
 
 Next:
 
-1. Finish documentation and deployment improvements.
+- No remaining planned items.
